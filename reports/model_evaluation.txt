@@ -1,0 +1,7 @@
+Accuracy: 0.9900
+Precision: 1.0000
+Recall: 0.9793
+F1 Score: 0.9895
+ROC-AUC: 1.0000
+
+Mean CV F1 Score: 0.9867
