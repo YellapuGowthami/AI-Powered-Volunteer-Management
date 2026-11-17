@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
-    
+
 import sqlite3
 
 
@@ -20,6 +20,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.matching import rank_opportunities
+
+from src.database import create_tables
 
 # Project paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -166,8 +168,28 @@ st.info(
 )
 
 if not DB_PATH.exists():
-    st.error("Database not found. Please create the database first.")
-    st.stop()
+    try:
+        create_tables()
+
+        connection = sqlite3.connect(DB_PATH)
+
+        datasets = {
+            "organisations": "organisations.csv",
+            "volunteers": "volunteers.csv",
+            "opportunities": "opportunities.csv",
+            "matching_results": "matching_labels.csv"
+        }
+
+        for table, filename in datasets.items():
+            csv_path = BASE_DIR / "data" / "processed" / filename
+            dataframe = pd.read_csv(csv_path)
+            dataframe.to_sql(table, connection, if_exists="append", index=False)
+
+        connection.close()
+
+    except Exception as error:
+        st.error(f"Database initialization failed: {error}")
+        st.stop()
 
 if not MODEL_PATH.exists():
     st.error("Trained model not found. Please train the model first.")
